@@ -1,2 +1,0 @@
-docker build --no-cache -t crowmommy/docker-manager:DEV . 
-docker push crowmommy/docker-manager:DEV

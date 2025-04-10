@@ -1,7 +1,7 @@
 
+import docker
 import tarfile
 import io
-import docker
 from flask import request, redirect, url_for, flash, render_template
 from modules.auth import requires_role
 
@@ -14,29 +14,42 @@ def register_upload_routes(app):
     def upload_file():
         if request.method == "POST":
             container_name = request.form["container"]
-            path_in_container = request.form["path"]
+            label_key = request.form["labelkey"]
             file = request.files["file"]
 
-            if not file:
-                flash("No file selected.")
+            if not file or not container_name or not label_key:
+                flash("Missing file, container, or label key.")
                 return redirect(url_for("upload_file"))
-
-            # Create tar archive with file inside
-            tarstream = io.BytesIO()
-            with tarfile.open(fileobj=tarstream, mode="w") as tar:
-                info = tarfile.TarInfo(name=path_in_container.split("/")[-1])
-                file_bytes = file.read()
-                info.size = len(file_bytes)
-                tar.addfile(tarinfo=info, fileobj=io.BytesIO(file_bytes))
-            tarstream.seek(0)
 
             try:
                 container = client.containers.get(container_name)
-                container.put_archive(path=path_in_container.rsplit("/", 1)[0], data=tarstream)
+                labels = container.labels or {}
+                dest_path = labels.get(label_key)
+
+                if not dest_path:
+                    flash(f"No label found for key: {label_key}")
+                    return redirect(url_for("upload_file"))
+
+                tarstream = io.BytesIO()
+                with tarfile.open(fileobj=tarstream, mode="w") as tar:
+                    filename = dest_path.split("/")[-1]
+                    info = tarfile.TarInfo(name=filename)
+                    file_bytes = file.read()
+                    info.size = len(file_bytes)
+                    tar.addfile(tarinfo=info, fileobj=io.BytesIO(file_bytes))
+                tarstream.seek(0)
+
+                container.put_archive(path=dest_path.rsplit("/", 1)[0], data=tarstream)
                 flash("File uploaded successfully.")
             except Exception as e:
-                flash(f"Error: {e}")
+                flash(f"Upload failed: {e}")
 
             return redirect(url_for("upload_file"))
 
-        return render_template("upload.html")
+        containers = client.containers.list(all=True)
+        container_data = [
+            {"name": c.name, "labels": c.labels or {}}
+            for c in containers
+        ]
+        return render_template("upload.html", containers=container_data)
+
