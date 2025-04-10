@@ -63,3 +63,28 @@ def register_admin_routes(app):
         conn.close()
         flash("Permission added.")
         return redirect(url_for("admin_panel"))
+    
+    @app.route("/admin/edit-user/<int:user_id>", methods=["POST"])
+    @requires_role("admin")
+    def edit_user(user_id):
+        username = request.form["username"]
+        role = request.form["role"]
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET username = ?, role = ? WHERE id = ?", (username, role.lower(), user_id))
+        conn.commit()
+        conn.close()
+        flash("User updated successfully.")
+        return redirect(url_for("admin_panel"))
+
+    @app.route("/admin/delete-user/<int:user_id>")
+    @requires_role("admin")
+    def delete_user(user_id):
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+        conn.close()
+        flash("User deleted.")
+        return redirect(url_for("admin_panel"))

@@ -8,6 +8,7 @@
 </head>
 <body class="p-4">
   <h2 class="mb-4">Admin Panel</h2>
+
   <h4>Create New User</h4>
   <form method="POST" action="/admin/create-user" class="mb-4">
     <div class="mb-3">
@@ -25,29 +26,29 @@
     <button type="submit" class="btn btn-primary">Create User</button>
   </form>
 
-  <h4>All Users</h4>
-  <ul class="list-group mb-4">
-    {% for user in users %}
-      <li class="list-group-item">{{ user[1] }} - Role: {{ user[3] }}</li>
-    {% endfor %}
-  </ul>
+  <h4>Edit Existing Users</h4>
+  {% for user in users %}
+    <form method="POST" action="/admin/edit-user/{{ user[0] }}" class="mb-3 border p-3 rounded">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" value="{{ user[1] }}" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Role</label>
+          {% set current_role = user[3]|lower %}
+          <select name="role" class="form-control">
+            <option value="user" {% if current_role == 'user' %}selected{% endif %}>User</option>
+            <option value="admin" {% if current_role == 'admin' %}selected{% endif %}>Admin</option>
+          </select>
 
-  <h4>Assign Container Access</h4>
-  <form method="POST" action="/admin/assign-container" class="mb-4">
-    <div class="mb-3">
-      <input type="text" name="username" class="form-control" placeholder="Username" required>
-    </div>
-    <div class="mb-3">
-      <input type="text" name="container" class="form-control" placeholder="Container Name" required>
-    </div>
-    <button type="submit" class="btn btn-secondary">Assign Access</button>
-  </form>
-
-  <h4>Container Access</h4>
-  <ul class="list-group">
-    {% for perm in permissions %}
-      <li class="list-group-item">{{ perm[0] }} → {{ perm[1] }}</li>
-    {% endfor %}
-  </ul>
+        </div>
+        <div class="col-md-3 mt-4">
+          <button type="submit" class="btn btn-success">Save</button>
+          <a href="/admin/delete-user/{{ user[0] }}" class="btn btn-danger ms-2">Delete</a>
+        </div>
+      </div>
+    </form>
+  {% endfor %}
 </body>
 </html>

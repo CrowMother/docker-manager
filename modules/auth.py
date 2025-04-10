@@ -1,3 +1,4 @@
+
 import sqlite3
 from functools import wraps
 from flask import session, redirect, url_for
@@ -45,6 +46,13 @@ def get_user_containers(username):
             visible.append(container.name)
 
     return visible
+def get_user_role(username):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT role FROM users WHERE username=?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
 
 def login_required(f):
     @wraps(f)
@@ -63,11 +71,3 @@ def requires_role(role):
             return f(*args, **kwargs)
         return decorated_function
     return wrapper
-
-def get_user_role(username):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT role FROM users WHERE username=?", (username,))
-    row = cursor.fetchone()
-    conn.close()
-    return row[0] if row else None
