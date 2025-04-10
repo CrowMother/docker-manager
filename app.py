@@ -1,24 +1,30 @@
 
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 import docker
-from modules import util
+import os
+import modules.util as util
+from modules.auth import login_required, requires_role, init_db, verify_user, get_user_containers
 
-# do proper imports for the bot framework library
 app = Flask(__name__)
-app.secret_key = util.get_secret("SECRET_KEY", ".env")  # Replace for production
-USERNAME = util.get_secret("USERNAME", ".env") # Replace for production
-PASSWORD = util.get_secret("PASSWORD", ".env") # Replace for production
+app.secret_key = util.get_secret("SECRET_KEY", ".env")
+
+USERNAME = util.get_secret("USERNAME", ".env")
+PASSWORD = util.get_secret("PASSWORD", ".env")
 
 client = docker.from_env()
+init_db()
 
 @app.route("/", methods=["GET"])
-def home():
-    if "logged_in" not in session:
-        return redirect(url_for("login"))
+@login_required
+def index():
+    username = session.get("username")
     containers = client.containers.list(all=True)
-    container_info = []
+    visible_containers = get_user_containers(username)
 
+    container_info = []
     for container in containers:
+        if visible_containers and container.name not in visible_containers:
+            continue
         env_list = container.attrs['Config']['Env']
         env_dict = dict(item.split("=", 1) for item in env_list if "=" in item)
         container_info.append({
@@ -33,22 +39,23 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if request.form["username"] == USERNAME and request.form["password"] == PASSWORD:
+        username = request.form["username"]
+        password = request.form["password"]
+        if verify_user(username, password):
             session["logged_in"] = True
-            return redirect(url_for("home"))
-        else:
-            return render_template("login.html", error="Invalid credentials")
+            session["username"] = username
+            return redirect(url_for("index"))
+        flash("Invalid credentials")
     return render_template("login.html")
 
 @app.route("/logout")
 def logout():
-    session.pop("logged_in", None)
+    session.clear()
     return redirect(url_for("login"))
 
 @app.route("/control/<container_id>/<action>")
+@login_required
 def control(container_id, action):
-    if "logged_in" not in session:
-        return redirect(url_for("login"))
     container = client.containers.get(container_id)
     if action == "start":
         container.start()
