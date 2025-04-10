@@ -28,24 +28,24 @@ init_db()
 @login_required
 def index():
     username = session.get("username")
-    containers = client.containers.list(all=True)
-    visible_containers = get_user_containers(username)
-
+    visible_container_names = get_user_containers(username)
     container_info = []
-    for container in containers:
-        if visible_containers and container.name not in visible_containers:
-            continue
-        env_list = container.attrs['Config']['Env']
-        env_dict = dict(item.split("=", 1) for item in env_list if "=" in item)
-        container_info.append({
-            "id": container.id,
-            "name": container.name,
-            "status": container.status,
-            "env_vars": env_dict
-        })
 
-    return render_template("index.html", containers=container_info)
+    for name in visible_container_names:
+        try:
+            container = client.containers.get(name)
+            env_list = container.attrs['Config']['Env']
+            env_dict = dict(item.split("=", 1) for item in env_list if "=" in item)
+            container_info.append({
+                "id": container.id,
+                "name": container.name,
+                "status": container.status,
+                "env_vars": env_dict
+            })
+        except docker.errors.NotFound:
+            continue  # In case container was removed between list and get
 
+    return render_template("index.html", containers=container_info, username=username)
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":

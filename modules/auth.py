@@ -3,6 +3,7 @@ import sqlite3
 from functools import wraps
 from flask import session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
+import docker
 
 DB_PATH = "users.db"
 
@@ -39,17 +40,21 @@ def verify_user(username, password):
     return False
 
 def get_user_containers(username):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE username=?", (username,))
-    user = cursor.fetchone()
-    if not user:
-        return []
-    user_id = user[0]
-    cursor.execute("SELECT container_name FROM permissions WHERE user_id=?", (user_id,))
-    containers = [row[0] for row in cursor.fetchall()]
-    conn.close()
-    return containers
+    client = docker.from_env()
+    containers = client.containers.list(all=True)
+
+    user_container_names = []
+
+    for container in containers:
+        labels = container.labels or {}
+        owners = labels.get("permissions.owner", "")
+        if not owners:
+            continue  # Skip containers with no owner label
+        owner_list = [u.strip() for u in owners.split(",")]
+        if username in owner_list:
+            user_container_names.append(container.name)
+
+    return user_container_names
 
 def login_required(f):
     @wraps(f)
