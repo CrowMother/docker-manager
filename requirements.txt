@@ -1,1 +1,3 @@
-git+https://github.com/CrowMother/Bot_framework.git
+flask 
+docker
+dotenv

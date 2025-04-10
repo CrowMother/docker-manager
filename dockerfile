@@ -7,8 +7,9 @@ WORKDIR /app
 # Copy app files
 COPY . /app
 
-# Install dependencies
-RUN pip install flask docker
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose port
 EXPOSE 5000
