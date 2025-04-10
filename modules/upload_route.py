@@ -4,6 +4,8 @@ import tarfile
 import io
 from flask import request, redirect, url_for, flash, render_template
 from modules.auth import requires_role
+from modules.auth import get_user_containers
+from flask import session
 
 client = docker.from_env()
 
@@ -46,10 +48,14 @@ def register_upload_routes(app):
 
             return redirect(url_for("upload_file"))
 
-        containers = client.containers.list(all=True)
-        container_data = [
+        
+
+        username = session.get("username")
+        all_containers = client.containers.list(all=True)
+        user_containers = [
             {"name": c.name, "labels": c.labels or {}}
-            for c in containers
+            for c in all_containers if c.name in get_user_containers(username)
         ]
-        return render_template("upload.html", containers=container_data)
+        return render_template("upload.html", containers=user_containers)
+
 

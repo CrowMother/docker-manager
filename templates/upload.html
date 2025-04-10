@@ -10,6 +10,7 @@
       const containerSelect = document.getElementById("containerSelect");
       const labelPathInput = document.getElementById("pathDisplay");
       const labelKeyHidden = document.getElementById("labelkey");
+      const uploadBtn = document.getElementById("uploadBtn");
       const data = JSON.parse(document.getElementById("containerData").textContent);
       const selected = containerSelect.value;
       const container = data.find(c => c.name === selected);
@@ -19,13 +20,25 @@
       const fileLabelPath = fileLabelKey ? labels[fileLabelKey] : "";
 
       labelKeyHidden.value = fileLabelKey;
-      labelPathInput.value = fileLabelPath || "No 'files.' label found on container";
+      labelPathInput.value = fileLabelPath || "No 'files.*' label found";
+
+      uploadBtn.disabled = !fileLabelPath;
     }
-    window.onload = updateLabelPath;
+
+    window.onload = () => {
+      updateLabelPath();
+      const flashMsg = document.getElementById("flashMessage");
+      if (flashMsg && flashMsg.textContent.trim() !== "") {
+        alert(flashMsg.textContent.trim());
+      }
+    };
   </script>
 </head>
 <body class="p-4">
   <h2 class="mb-4">Upload File to Container (Label Based)</h2>
+
+  <div id="flashMessage" style="display:none;">{{ get_flashed_messages()[0] if get_flashed_messages() else '' }}</div>
+
   <form method="POST" action="/upload" enctype="multipart/form-data">
     <div class="mb-3">
       <label for="container">Select Container</label>
@@ -45,7 +58,7 @@
       <label for="file">Choose File</label>
       <input type="file" name="file" class="form-control" required>
     </div>
-    <button type="submit" class="btn btn-primary">Upload File</button>
+    <button type="submit" class="btn btn-primary" id="uploadBtn">Upload File</button>
   </form>
 
   <script type="application/json" id="containerData">
