@@ -15,12 +15,12 @@
         <span>Status: {{ container.status }}</span>
       </div>
       <div class="card-body">
-        <h5>Environment Variables:</h5>
+        <!-- <h5>Environment Variables:</h5>
         <ul class="list-group mb-3">
           {% for key, value in container.env_vars.items() %}
             <li class="list-group-item"><strong>{{ key }}</strong>: {{ value }}</li>
           {% endfor %}
-        </ul>
+        </ul> -->
         <div>
           <a href="/control/{{ container.id }}/start" class="btn btn-success btn-sm">Start</a>
           <a href="/control/{{ container.id }}/stop" class="btn btn-danger btn-sm">Stop</a>

@@ -6,6 +6,7 @@ import modules.util as util
 from modules.auth import login_required, requires_role, init_db, verify_user, get_user_containers
 from modules.admin_routes import register_admin_routes
 from modules.auth import get_user_role
+from modules.upload_route import register_upload_routes
 
 
 app = Flask(__name__)
@@ -18,6 +19,8 @@ client = docker.from_env()
 
 # Initialize admin routes
 register_admin_routes(app)
+# Initialize File Upload routes
+register_upload_routes(app)
 # Initialize database
 init_db()
 
