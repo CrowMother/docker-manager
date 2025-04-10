@@ -1,18 +1,22 @@
 # Use a lightweight Python image
 FROM python:3.11-slim
 
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 # Set working directory
 WORKDIR /app
 
-# Copy app files
-COPY . /app
-
-# Install Python dependencies
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port
+# Copy the app
+COPY . .
+
+# Expose Flask port
 EXPOSE 5000
 
-# Run the Flask app
+# Run the app
 CMD ["python", "app.py"]

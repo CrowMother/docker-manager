@@ -1,3 +1,4 @@
-flask 
+flask
 docker
-dotenv
+python-dotenv
+werkzeug
