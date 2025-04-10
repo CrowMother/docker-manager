@@ -81,3 +81,4 @@ if __name__ == "__main__":
         list_permissions()
     else:
         parser.print_help()
+        
