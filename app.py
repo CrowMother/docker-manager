@@ -1,13 +1,13 @@
 
 from flask import Flask, render_template, request, redirect, session, url_for
 import docker
-import Bot_App as bot
+from modules import util
 
 # do proper imports for the bot framework library
 app = Flask(__name__)
-app.secret_key = bot.util.get_secret("SECRET_KEY", ".env")  # Replace for production
-USERNAME = bot.util.get_secret("USERNAME", ".env") # Replace for production
-PASSWORD = bot.util.get_secret("PASSWORD", ".env") # Replace for production
+app.secret_key = util.get_secret("SECRET_KEY", ".env")  # Replace for production
+USERNAME = util.get_secret("USERNAME", ".env") # Replace for production
+PASSWORD = util.get_secret("PASSWORD", ".env") # Replace for production
 
 client = docker.from_env()
 
