@@ -4,7 +4,7 @@ import tarfile
 import io
 from flask import request, redirect, url_for, flash, render_template
 from modules.auth import requires_role
-from modules.auth import get_user_containers
+from modules.auth import get_user_containers, login_required
 from flask import session
 
 client = docker.from_env()
@@ -12,7 +12,7 @@ client = docker.from_env()
 def register_upload_routes(app):
 
     @app.route("/upload", methods=["GET", "POST"])
-    @requires_role("admin")
+    @login_required
     def upload_file():
         if request.method == "POST":
             container_name = request.form["container"]
