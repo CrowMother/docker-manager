@@ -4,6 +4,9 @@ import docker
 import os
 import modules.util as util
 from modules.auth import login_required, requires_role, init_db, verify_user, get_user_containers
+from modules.admin_routes import register_admin_routes
+from modules.auth import get_user_role
+
 
 app = Flask(__name__)
 app.secret_key = util.get_secret("SECRET_KEY", ".env")
@@ -12,6 +15,10 @@ USERNAME = util.get_secret("USERNAME", ".env")
 PASSWORD = util.get_secret("PASSWORD", ".env")
 
 client = docker.from_env()
+
+# Initialize admin routes
+register_admin_routes(app)
+# Initialize database
 init_db()
 
 @app.route("/", methods=["GET"])
@@ -44,6 +51,10 @@ def login():
         if verify_user(username, password):
             session["logged_in"] = True
             session["username"] = username
+
+            # Get and store user role
+            session["role"] = get_user_role(username)
+
             return redirect(url_for("index"))
         flash("Invalid credentials")
     return render_template("login.html")
