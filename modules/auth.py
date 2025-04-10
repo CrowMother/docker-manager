@@ -68,3 +68,11 @@ def requires_role(role):
             return f(*args, **kwargs)
         return decorated_function
     return wrapper
+
+def get_user_role(username):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT role FROM users WHERE username=?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
