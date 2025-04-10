@@ -1,4 +1,3 @@
-
 import sqlite3
 from functools import wraps
 from flask import session, redirect, url_for
@@ -18,14 +17,6 @@ def init_db():
             role TEXT NOT NULL
         )
     ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS permissions (
-            id INTEGER PRIMARY KEY,
-            user_id INTEGER,
-            container_name TEXT,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )
-    ''')
     conn.commit()
     conn.close()
 
@@ -42,19 +33,18 @@ def verify_user(username, password):
 def get_user_containers(username):
     client = docker.from_env()
     containers = client.containers.list(all=True)
-
-    user_container_names = []
+    visible = []
 
     for container in containers:
         labels = container.labels or {}
         owners = labels.get("permissions.owner", "")
         if not owners:
-            continue  # Skip containers with no owner label
+            continue
         owner_list = [u.strip() for u in owners.split(",")]
-        if username in owner_list:
-            user_container_names.append(container.name)
+        if username in owner_list or session.get("role") == "admin":
+            visible.append(container.name)
 
-    return user_container_names
+    return visible
 
 def login_required(f):
     @wraps(f)
