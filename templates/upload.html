@@ -35,6 +35,7 @@
   </script>
 </head>
 <body class="p-4">
+  {% include 'navbar.html' %}
   <h2 class="mb-4">Upload File to Container (Label Based)</h2>
 
   <div id="flashMessage" style="display:none;">{{ get_flashed_messages()[0] if get_flashed_messages() else '' }}</div>
