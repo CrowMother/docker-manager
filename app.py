@@ -5,6 +5,7 @@ import modules.util as util
 from modules.auth import login_required, requires_role, init_db, verify_user, get_user_containers, get_user_role
 from modules.admin_routes import register_admin_routes
 from modules.upload_route import register_upload_routes
+from modules.manage_route import register_manage_routes
 
 app = Flask(__name__)
 app.secret_key = util.get_secret("SECRET_KEY", ".env")
@@ -16,6 +17,7 @@ client = docker.from_env()
 
 register_admin_routes(app)
 register_upload_routes(app)
+register_manage_routes(app)
 init_db()
 
 @app.route("/", methods=["GET"])

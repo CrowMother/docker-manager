@@ -13,6 +13,8 @@
     <div class="card mb-3">
       <div class="card-header d-flex justify-content-between">
         <strong>{{ container.name }}</strong>
+        <li class="nav-item"><a class="nav-link" href="/manage/{{ container.id }}">Manage</a></li>
+        
         <span>Status: {{ container.status }}</span>
       </div>
       <div class="card-body">
