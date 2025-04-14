@@ -20,26 +20,25 @@ def register_manage_routes(app):
         fields = []
 
         for key in env_vars:
+            type_label = labels.get(f"envtype.{key}")
+            if not type_label:
+                continue  # skip anything not explicitly labeled
+
             field = {
                 "key": key,
                 "value": env_vars[key],
                 "type": "text",
-                "editable": True,
+                "editable": labels.get(f"editable.{key}", "true").lower() == "true",
                 "options": []
             }
 
-            type_label = labels.get(f"envtype.{key}")
-            editable_label = labels.get(f"editable.{key}", "true")
+            if type_label.startswith("dropdown["):
+                field["type"] = "dropdown"
+                options_str = type_label[len("dropdown["):-1]
+                field["options"] = [x.strip() for x in options_str.split(",")]
+            else:
+                field["type"] = type_label.lower()
 
-            if type_label:
-                if type_label.startswith("dropdown["):
-                    field["type"] = "dropdown"
-                    options_str = type_label[len("dropdown["):-1]
-                    field["options"] = [x.strip() for x in options_str.split(",")]
-                else:
-                    field["type"] = type_label
-
-            field["editable"] = editable_label.lower() == "true"
             fields.append(field)
 
         return render_template("manage.html", container_id=container_id, container_name=container.name, fields=fields)

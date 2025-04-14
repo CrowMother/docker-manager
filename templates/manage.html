@@ -28,6 +28,8 @@
                   <option value="{{ opt }}" {% if opt == field.value %}selected{% endif %}>{{ opt }}</option>
                 {% endfor %}
               </select>
+            {% elif field.type == 'paragraph' %}
+              <textarea name="{{ field.key }}" class="form-control" rows="5">{{ field.value }}</textarea>            
             {% else %}
               <input type="{{ field.type }}" name="{{ field.key }}" class="form-control" value="{{ field.value }}">
             {% endif %}
